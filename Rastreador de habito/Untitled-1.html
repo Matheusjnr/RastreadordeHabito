@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solo Leveling Habit Tracker - Sistema</title>
+    <style>
+        /* Estilos Básicos (Inspirado em Solo Leveling - Dark Theme) */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #E0E0E0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #146eff; /* Roxo */
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            max-width: 1200px;
+        }
+
+        .panel {
+            background-color: #1F1F1F;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 350px;
+        }
+
+        /* Painel de Status (1. Crie seu Personagem) */
+        #status-panel {
+            text-align: center;
+            border: 1px solid #6a0dad;
+        }
+
+        #level { font-size: 2em; margin: 5px 0; color: #00bcd4; } /* Ciano */
+        #name { font-size: 1.5em; margin-bottom: 15px; }
+
+        .bar-container {
+            background-color: #333;
+            height: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .hp-bar, .exp-bar {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .hp-bar { background-color: #e53935; } /* Vermelho */
+        .exp-bar { background-color: #105fcf; } /* Roxo */
+
+        /* Painel de Batalhas (3. Defina suas Batalhas) */
+        #battles-panel {
+            flex-grow: 1;
+        }
+
+        .battle-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .battle-item:last-child { border-bottom: none; }
+
+        button {
+            background-color: #00bcd4;
+            color: #121212;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        button:hover { background-color: #00a4b8; }
+        .negative-btn { background-color: #e53935; color: white; }
+        .negative-btn:hover { background-color: #c62828; }
+
+        /* Painel de Habilidades (4. Selecione a Skill) */
+        #skills-panel {
+            flex-grow: 1;
+        }
+
+        .skill-item {
+            margin-bottom: 15px;
+        }
+
+        .skill-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+        
+        .skill-level { color: #00bcd4; }
+
+        /* Log de Atividades (5. Ganhe EXP e Suba de Nível) */
+        #log-panel {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 730px; /* Largura combinada de Status e Batalhas */
+        }
+
+        #log-content {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #000;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px 0;
+            border-bottom: 1px dashed #222;
+            font-size: 0.9em;
+        }
+
+        .log-entry.exp { color: #d9d322; }
+        .log-entry.fail { color: #e53935; }
+        .log-entry.level-up { color: #00bcd4; font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+    <h1>SISTEMA DE RASTREAMENTO DE HÁBITOS - SOLO LEVELING</h1>
+
+    <div class="container">
+        
+        <div id="status-panel" class="panel">
+            <h2>👤 Status do Caçador</h2>
+            <p id="name">Matheus Rebouças</p>
+            <p>Nível: <span id="level">1</span></p>
+
+            <label>HP (Vida):</label>
+            <div class="bar-container"><div id="hp-bar" class="hp-bar" style="width: 100%;"></div></div>
+            <p id="hp-text">1000 / 1000</p>
+            
+            <label>EXP (Experiência):</label>
+            <div class="bar-container"><div id="exp-bar" class="exp-bar" style="width: 0%;"></div></div>
+            <p id="exp-text">0 / 100</p>
+            <p>Moedas: <span id="gold">0</span></p>
+        </div>
+
+        <div id="battles-panel" class="panel">
+            <h2>⚔️ Batalhas (Hábitos Diários)</h2>
+            <div id="battles-list">
+                
+                <div class="battle-item">
+                    <span>📚 Ler 20 páginas (+20 EXP, +5 Moedas)</span>
+                    <button onclick="completeHabit('read')">COMPLETAR</button>
+                </div>
+                
+                <div class="battle-item">
+                    <span>🏋️ Treino Físico (+30 EXP, +10 Moedas)</span>
+                    <button onclick="completeHabit('training')">COMPLETAR</button>
+                </div>
+
+                <div class="battle-item">
+                    <span>😴 Não Procrastinar (Falha: -10 EXP, -100 HP)</span>
+                    <button class="negative-btn" onclick="failHabit('procrastinate')">FALHAR</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="skills-panel" class="panel">
+            <h2>✨ Pontos de Habilidade</h2>
+            
+            <div id="skill-list">
+                <div class="skill-item">
+                    <div class="skill-header">
+                        <span>🧠 INTELECTO (Leitura)</span>
+                        <span class="skill-level">LV <span id="skill-intellect-level">1</span></span>
+                    </div>
+                    <div class="bar-container"><div id="skill-intellect-progress" class="exp-bar" style="width: 0%;"></div></div>
+                    <p id="skill-intellect-text">0 / 500</p>
+                </div>
+
+                <div class="skill-item">
+                    <div class="skill-header">
+                        <span>💪 FORÇA FÍSICA (Treino)</span>
+                        <span class="skill-level">LV <span id="skill-strength-level">1</span></span>
+                    </div>
+                    <div class="bar-container"><div id="skill-strength-progress" class="exp-bar" style="width: 0%;"></div></div>
+                    <p id="skill-strength-text">0 / 500</p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <div id="log-panel">
+        <h2>📜 Log de Atividades</h2>
+        <div id="log-content">
+            </div>
+    </div>
+
+
+    <script>
+        // Variáveis Globais de Status do Jogador
+        let player = {
+            name: "Sung Jin Woo (Mock)",
+            level: 1,
+            exp: 0,
+            expToNextLevel: 100,
+            hp: 1000,
+            maxHp: 1000,
+            gold: 0
+        };
+
+        // Variáveis de Habilidades (Skills)
+        let skills = {
+            intellect: { level: 1, progress: 0, required: 500 },
+            strength: { level: 1, progress: 0, required: 500 }
+        };
+
+        // Configurações dos Hábitos
+        const habitConfig = {
+            read: { exp: 20, gold: 5, skill: 'intellect' },
+            training: { exp: 30, gold: 10, skill: 'strength' },
+            procrastinate: { expPenalty: 10, hpPenalty: 100 }
+        };
+
+        // --- Funções de Atualização da Interface (UI) ---
+
+        function updateStatusUI() {
+            document.getElementById('level').textContent = player.level;
+            document.getElementById('hp-text').textContent = `${player.hp} / ${player.maxHp}`;
+            document.getElementById('exp-text').textContent = `${player.exp} / ${player.expToNextLevel}`;
+            document.getElementById('gold').textContent = player.gold;
+
+            const hpPercent = (player.hp / player.maxHp) * 100;
+            document.getElementById('hp-bar').style.width = `${hpPercent}%`;
+
+            const expPercent = (player.exp / player.expToNextLevel) * 100;
+            document.getElementById('exp-bar').style.width = `${expPercent}%`;
+        }
+
+        function updateSkillsUI() {
+            // Intelecto
+            document.getElementById('skill-intellect-level').textContent = skills.intellect.level;
+            document.getElementById('skill-intellect-text').textContent = `${skills.intellect.progress} / ${skills.intellect.required}`;
+            const intellectPercent = (skills.intellect.progress / skills.intellect.required) * 100;
+            document.getElementById('skill-intellect-progress').style.width = `${intellectPercent}%`;
+
+            // Força Física
+            document.getElementById('skill-strength-level').textContent = skills.strength.level;
+            document.getElementById('skill-strength-text').textContent = `${skills.strength.progress} / ${skills.strength.required}`;
+            const strengthPercent = (skills.strength.progress / skills.strength.required) * 100;
+            document.getElementById('skill-strength-progress').style.width = `${strengthPercent}%`;
+        }
+
+        function addLogEntry(message, type = 'general') {
+            const logContent = document.getElementById('log-content');
+            const newEntry = document.createElement('div');
+            const date = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            newEntry.className = `log-entry ${type}`;
+            newEntry.innerHTML = `[${date}] ${message}`;
+
+            logContent.prepend(newEntry); // Adiciona no topo
+            // Limita o número de entradas para não sobrecarregar
+            while (logContent.children.length > 50) {
+                logContent.lastChild.remove();
+            }
+        }
+
+        // --- Funções de Lógica do Jogo ---
+
+        function checkLevelUp() {
+            let levelUpOccurred = false;
+            while (player.exp >= player.expToNextLevel) {
+                player.exp -= player.expToNextLevel;
+                player.level += 1;
+                // Aumenta a EXP necessária para o próximo nível (ex: 100, 120, 140...)
+                player.expToNextLevel = Math.floor(player.expToNextLevel * 1.2);
+                player.maxHp += 100; // Ganho de HP ao subir de nível
+                player.hp = player.maxHp; // Cura completa!
+                addLogEntry(`🎉 **PARABÉNS!** Você subiu para o **Nível ${player.level}**! Seu HP foi restaurado.`, 'level-up');
+                levelUpOccurred = true;
+            }
+            if (levelUpOccurred) {
+                updateStatusUI();
+            }
+        }
+        
+        function checkSkillLevelUp(skillKey) {
+            const skill = skills[skillKey];
+            let levelUpOccurred = false;
+            while (skill.progress >= skill.required) {
+                skill.progress -= skill.required;
+                skill.level += 1;
+                // Aumenta a progressão necessária para o próximo nível da skill
+                skill.required = Math.floor(skill.required * 1.5);
+                addLogEntry(`🌟 Skill **${skillKey.toUpperCase()}** subiu para o **LV ${skill.level}**!`, 'level-up');
+                levelUpOccurred = true;
+            }
+            if (levelUpOccurred) {
+                updateSkillsUI();
+            }
+        }
+
+        // --- Funções de Ação do Usuário ---
+
+        window.completeHabit = function(habitKey) {
+            const config = habitConfig[habitKey];
+            
+            // 1. Ganho de EXP e Moedas
+            let expGain = config.exp;
+            let goldGain = config.gold;
+
+            // 2. Bônus de EXP pela Skill (simulação)
+            const skill = skills[config.skill];
+            if (skill) {
+                // Ganho de 5% de EXP bônus por nível da Skill (ex: LV 2 = +10% EXP)
+                const bonus = expGain * 0.05 * (skill.level - 1);
+                expGain += Math.round(bonus);
+
+                // 3. Progresso da Skill
+                skill.progress += expGain;
+                checkSkillLevelUp(config.skill);
+            }
+            
+            player.exp += expGain;
+            player.gold += goldGain;
+
+            addLogEntry(`+${expGain} EXP, +${goldGain} Moedas. Hábito ${habitKey.toUpperCase()} COMPLETO!`, 'exp');
+            
+            checkLevelUp();
+            updateStatusUI();
+            updateSkillsUI();
+        }
+
+        window.failHabit = function(habitKey) {
+            const config = habitConfig[habitKey];
+            
+            // Perda de EXP e HP
+            player.exp = Math.max(0, player.exp - config.expPenalty);
+            player.hp = Math.max(0, player.hp - config.hpPenalty);
+
+            addLogEntry(`-${config.expPenalty} EXP, -${config.hpPenalty} HP. Hábito ${habitKey.toUpperCase()} FALHOU!`, 'fail');
+            
+            if (player.hp === 0) {
+                addLogEntry(`☠️ **GAME OVER** Seu HP chegou a zero. O Sistema reiniciará em breve... (Funcionalidade de mock)`, 'fail');
+                // Em um site real, isso resetaria o dia ou aplicaria uma penalidade maior.
+            }
+            
+            updateStatusUI();
+        }
+
+        // Inicialização
+        function init() {
+            updateStatusUI();
+            updateSkillsUI();
+            addLogEntry("Sistema ativado. Bem-vindo(a) Caçador(a)! Defina suas Batalhas e Aumente seu Nível.", 'level-up');
+        }
+
+        init();
+    </script>
+</body>
+</html>
